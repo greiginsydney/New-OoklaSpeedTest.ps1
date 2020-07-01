@@ -137,7 +137,7 @@ $Attempt = 0
 	
 	try
 	{
-		$response = Invoke-Expression "$SpeedTestExe $params" 	# "$Response" will contain <what?>
+		$response = Invoke-Expression "& '$SpeedTestExe' $params" 	# "$Response" will contain <what?>
 		add-content -path $LogFile -value "Success:`n`r$response" -force
 		$success = $true
 		break
