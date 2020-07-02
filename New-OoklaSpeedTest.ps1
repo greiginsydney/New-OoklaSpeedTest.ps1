@@ -160,7 +160,7 @@ $doc.AppendChild($dec) | Out-Null
 $root = $doc.CreateNode("element","prtg",$null)
 if ($Success)
 {
-	foreach ($Title in @('Server ID', 'Latency', 'Jitter', 'Packet Loss', 'Download Speed', 'Upload Speed'))
+	foreach ($Title in @('Download Speed', 'Upload Speed' , 'Latency', 'Jitter', 'Packet Loss'))
 	{
 		$child = $doc.CreateNode("element","Result",$null)
 		$ChannelElement = $doc.CreateElement('Channel')
@@ -172,13 +172,22 @@ if ($Success)
 
 		switch ($Title)
 		{
-			'Server ID'
+			'Download Speed'
 			{
-				$ChannelElement.InnerText = $Title;
-				$Value = ($result.server).id
-				#$UnitElement.InnerText = if ($metric) { "&#8451;" } else { "&#8457;" };
+				$channelelement.innertext = $Title;
+				$Value = ($result.download).bandwidth * 8;
+				#$UnitElement.InnerText = if ($metric) { "hPa" } else { "Hg" };
 				$FloatElement.InnerText = '0';
-				$ChartElement.InnerText = '0';
+				$ChartElement.InnerText = '1';
+				$TableElement.InnerText = '1';
+			}
+			'Upload Speed'
+			{
+				$channelelement.innertext = $Title;
+				$Value = ($result.upload).bandwidth * 8;
+				#$UnitElement.InnerText = if ($metric) { "km/h" } else { "mph" };
+				$FloatElement.InnerText = '0';
+				$ChartElement.InnerText = '1';
 				$TableElement.InnerText = '1';
 			}
 			'Latency'
@@ -204,24 +213,6 @@ if ($Success)
 				$channelelement.innertext = $Title;
 				$Value = $result.packetLoss
 				#$UnitElement.InnerText = "%";
-				$FloatElement.InnerText = '0';
-				$ChartElement.InnerText = '1';
-				$TableElement.InnerText = '1';
-			}
-			'Download Speed'
-			{
-				$channelelement.innertext = $Title;
-				$Value = ($result.download).bandwidth
-				#$UnitElement.InnerText = if ($metric) { "hPa" } else { "Hg" };
-				$FloatElement.InnerText = '0';
-				$ChartElement.InnerText = '1';
-				$TableElement.InnerText = '1';
-			}
-			'Upload Speed'
-			{
-				$channelelement.innertext = $Title;
-				$Value = ($result.upload).bandwidth
-				#$UnitElement.InnerText = if ($metric) { "km/h" } else { "mph" };
 				$FloatElement.InnerText = '0';
 				$ChartElement.InnerText = '1';
 				$TableElement.InnerText = '1';
