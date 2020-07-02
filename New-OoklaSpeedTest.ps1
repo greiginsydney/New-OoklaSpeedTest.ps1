@@ -9,12 +9,12 @@
 
 .NOTES
 	Version				: 0.0
-	Date				: 1st July 2020
+	Date				: 2nd July 2020
 	Author				: Greig Sheridan
 	See the credits at the bottom of the script
 
-	Based on https://github.com/greiginsydney/Get-WeatherLinkData.ps1
-	Blog post: https://greiginsydney.com/Get-WeatherLinkData.ps1
+	Based on :  https://github.com/greiginsydney/Get-WeatherLinkData.ps1
+	Blog post:  https://greiginsydney.com/Get-WeatherLinkData.ps1
 
 	WISH-LIST / TODO:
 
@@ -60,6 +60,9 @@
 .PARAMETER Retries
 	Integer. How many attempts will be made to get a good Speed Test. The default is 2.
 
+.PARAMETER Debug
+	Switch. If present, the script will drop a detailed debug log file into its own folder. One per month.
+
 #>
 
 [CmdletBinding(SupportsShouldProcess = $False)]
@@ -86,6 +89,16 @@ $Global:Debug = $psboundparameters.debug.ispresent
 # START FUNCTIONS ---------------
 #--------------------------------
 
+function logme
+{
+	param ([string]$message)
+
+	if ($debug)
+	{
+		add-content -path $LogFile -value ('{0:MMMdd-HHmm} {1}' -f (get-date), $message) -force
+	}
+}
+
 #--------------------------------
 # END FUNCTIONS -----------------
 #--------------------------------
@@ -93,8 +106,10 @@ $Global:Debug = $psboundparameters.debug.ispresent
 
 $scriptpath = $MyInvocation.MyCommand.Path
 $dir = Split-Path -Path $scriptpath
-$LogFile = (Join-Path -path $dir -childpath "New-OoklaSpeedTestLOG-")
-$LogFile += (Get-Date -format "yyyyMMdd-HHmm") + ".log"
+$Global:LogFile = (Join-Path -path $dir -childpath (("New-OoklaSpeedTest-{0:yyyyMMM}.log") -f (Get-Date)))
+
+logme ''
+logme 'Launched'
 
 if ($FileName)
 {
@@ -108,25 +123,34 @@ if ($FileName)
 		#It's relative.
 		$FileName = [IO.Path]::GetFullPath((Join-Path -path $dir -childpath $FileName))
 	}
+	logme ('Output file is     "{0}"' -f $Filename)
 }
-
-$SpeedTestExe = Join-Path -path $dir -childpath "Speedtest.exe"
-if (!(test-path $SpeedTestExe))
+else
 {
-	$message = "Speedtest not found in this directory. Aborting"
-	write-warning $message
-	add-content -path $LogFile -value $message -force
-	return
+	logme 'No `$Filename provided. Outputting to screen only.'
 }
 
-$params = ""
+$SpeedTestExe = Join-Path -path $dir -childpath 'Speedtest.exe'
+if (test-path $SpeedTestExe)
+{
+	logme ('Speedtest found at "{0}"' -f $SpeedtestExe)
+}
+else
+{
+	$message = 'Speedtest not found in this directory. Aborting.'
+	write-warning $message
+	logme $message
+	return	
+}
+
+$params = ''
 if (!([string]::IsNullorWhiteSpace($ServerId)))
 {
-	$params += "--server-id=$ServerId "
+	$params += '--server-id=$ServerId '
 }
 
-$params += "--format=json 2>&1"	# Append the handler that will capture errors
-#write-host $params -foregroundcolor cyan
+$params += '--format=json --accept-license 2>&1'	# Append the handler that will capture errors
+logme ('Params = "{0})"' -f $params)
 
 $Success = $false
 $Attempt = 0
@@ -138,33 +162,38 @@ $Attempt = 0
 	try
 	{
 		$response = Invoke-Expression "& '$SpeedTestExe' $params" 	# "$Response" will contain <what?>
-		add-content -path $LogFile -value "Success:`n`r$response" -force
+		logme "Success:$response" 
 		$success = $true
 		break
 	}
 	catch 
 	{
 		$response = "Error caught by handler: $_"
-		add-content -path $LogFile -value "Error: $_" -force
+		logme $response
 	}
 }
+
 $result = $response | convertfrom-json 
-#$result
-#$Result.packetLoss
-#$Result.isp
-#($result.server).location
 
 [xml]$Doc = New-Object System.Xml.XmlDocument
-$dec = $Doc.CreateXmlDeclaration("1.0","UTF-8",$null)
+$dec = $Doc.CreateXmlDeclaration('1.0','UTF-8',$null)
 $doc.AppendChild($dec) | Out-Null
-$root = $doc.CreateNode("element","prtg",$null)
+$root = $doc.CreateNode('element','prtg',$null)
 if ($Success)
 {
+	logme ('ISP          : {0}' -f ($Result.isp))
+	logme ('Location     : {0}' -f ($result.server).location)
+	logme ('Download b/w : {0}' -f ($result.download).bandwidth)
+	logme ('Upload b/w   : {0}' -f ($result.upload).bandwidth)
+	logme ('Jitter       : {0}' -f ($result.ping).jitter)
+	logme ('Latency      : {0}' -f ($result.ping).latency)
+	logme ('Packet loss  : {0}' -f $result.packetLoss)
+	
 	foreach ($Title in @('Download Speed', 'Upload Speed' , 'Latency', 'Jitter', 'Packet Loss'))
 	{
-		$child = $doc.CreateNode("element","Result",$null)
+		$child = $doc.CreateNode('element','Result',$null)
 		$ChannelElement = $doc.CreateElement('Channel')
-		$UnitElement = $doc.CreateElement('Unit')
+		$UnitElement = $doc.CreateElement('customUnit')
 		$FloatElement = $doc.CreateElement('float');
 		$ValueElement = $doc.CreateElement('value');
 		$ChartElement = $doc.CreateElement('showChart');
@@ -175,26 +204,26 @@ if ($Success)
 			'Download Speed'
 			{
 				$channelelement.innertext = $Title;
-				$Value = ($result.download).bandwidth * 8;
-				$UnitElement.InnerText = 'BytesBandwidth';
-				$FloatElement.InnerText = '0';
+				$Value = ('{0:n1}' -f ($result.download).bandwidth / 125000);
+				$UnitElement.InnerText = 'Mb/s';
+				$FloatElement.InnerText = '1';
 				$ChartElement.InnerText = '1';
 				$TableElement.InnerText = '1';
 			}
 			'Upload Speed'
 			{
 				$channelelement.innertext = $Title;
-				$Value = ($result.upload).bandwidth * 8;
-				$UnitElement.InnerText = 'BytesBandwidth';
-				$FloatElement.InnerText = '0';
+				$Value = ('{0:n1}' -f ($result.upload).bandwidth / 125000);
+				$UnitElement.InnerText = 'Mb/s';
+				$FloatElement.InnerText = '1';
 				$ChartElement.InnerText = '1';
 				$TableElement.InnerText = '1';
 			}
 			'Latency'
 			{
 				$channelelement.innertext = $Title;
-				$Value = ($result.ping).latency;
-				$UnitElement.InnerText = 'TimeResponse';
+				$Value = ('{0:n1}' -f ($result.ping).latency);
+				$UnitElement.InnerText = 'ms';
 				$FloatElement.InnerText = '1';
 				$ChartElement.InnerText = '1';
 				$TableElement.InnerText = '1';
@@ -202,8 +231,8 @@ if ($Success)
 			'Jitter'
 			{
 				$channelelement.innertext = $Title;
-				$Value = ($result.ping).jitter;
-				$UnitElement.InnerText = 'TimeResponse';
+				$Value = ('{0:n1}' -f ($result.ping).jitter);
+				$UnitElement.InnerText = 'ms';
 				$FloatElement.InnerText = '1';
 				$ChartElement.InnerText = '1';
 				$TableElement.InnerText = '1';
@@ -211,8 +240,8 @@ if ($Success)
 			'Packet Loss'
 			{
 				$channelelement.innertext = $Title;
-				$Value = $result.packetLoss;
-				$UnitElement.InnerText = 'Percent';
+				$Value = ('{0:n1}' -f $result.packetLoss);
+				$UnitElement.InnerText = '%';
 				$FloatElement.InnerText = '0';
 				$ChartElement.InnerText = '1';
 				$TableElement.InnerText = '1';
@@ -232,10 +261,10 @@ if ($Success)
 }
 else
 {
-	$child = $doc.CreateNode("element","error",$null)
+	$child = $doc.CreateNode('element','error',$null)
 	$child.InnerText = '1';
 	$root.AppendChild($child) | Out-Null
-	$child = $doc.CreateNode("element","text",$null)
+	$child = $doc.CreateNode('element','text',$null)
 	$child.InnerText = 'error';
 	#append to root
 	$root.AppendChild($child) | Out-Null
@@ -244,5 +273,6 @@ $doc.AppendChild($root) | Out-Null
 $doc.InnerXML
 if ($FileName) { $doc.Save($Filename)}
 
+logme 'Exited cleanly.'
 
 # CREDITS:
