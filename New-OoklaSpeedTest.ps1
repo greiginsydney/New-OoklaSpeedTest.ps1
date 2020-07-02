@@ -164,7 +164,7 @@ if ($Success)
 	{
 		$child = $doc.CreateNode("element","Result",$null)
 		$ChannelElement = $doc.CreateElement('Channel')
-		$UnitElement = $doc.CreateElement('customUnit')
+		$UnitElement = $doc.CreateElement('Unit')
 		$FloatElement = $doc.CreateElement('float');
 		$ValueElement = $doc.CreateElement('value');
 		$ChartElement = $doc.CreateElement('showChart');
@@ -176,7 +176,7 @@ if ($Success)
 			{
 				$channelelement.innertext = $Title;
 				$Value = ($result.download).bandwidth * 8;
-				#$UnitElement.InnerText = if ($metric) { "hPa" } else { "Hg" };
+				$UnitElement.InnerText = 'BytesBandwidth';
 				$FloatElement.InnerText = '0';
 				$ChartElement.InnerText = '1';
 				$TableElement.InnerText = '1';
@@ -185,7 +185,7 @@ if ($Success)
 			{
 				$channelelement.innertext = $Title;
 				$Value = ($result.upload).bandwidth * 8;
-				#$UnitElement.InnerText = if ($metric) { "km/h" } else { "mph" };
+				$UnitElement.InnerText = 'BytesBandwidth';
 				$FloatElement.InnerText = '0';
 				$ChartElement.InnerText = '1';
 				$TableElement.InnerText = '1';
@@ -193,26 +193,26 @@ if ($Success)
 			'Latency'
 			{
 				$channelelement.innertext = $Title;
-				$Value = ($result.ping).latency
-				#$UnitElement.InnerText = "%";
-				$FloatElement.InnerText = "1";
+				$Value = ($result.ping).latency;
+				$UnitElement.InnerText = 'TimeResponse';
+				$FloatElement.InnerText = '1';
 				$ChartElement.InnerText = '1';
 				$TableElement.InnerText = '1';
 			}
 			'Jitter'
 			{
 				$channelelement.innertext = $Title;
-				$Value = ($result.ping).jitter
-				#$UnitElement.InnerText = if ($metric) { "&#8451;" } else { "&#8457;" };
-				$FloatElement.InnerText = "1";
+				$Value = ($result.ping).jitter;
+				$UnitElement.InnerText = 'TimeResponse';
+				$FloatElement.InnerText = '1';
 				$ChartElement.InnerText = '1';
 				$TableElement.InnerText = '1';
 			}
 			'Packet Loss'
 			{
 				$channelelement.innertext = $Title;
-				$Value = $result.packetLoss
-				#$UnitElement.InnerText = "%";
+				$Value = $result.packetLoss;
+				$UnitElement.InnerText = 'Percent';
 				$FloatElement.InnerText = '0';
 				$ChartElement.InnerText = '1';
 				$TableElement.InnerText = '1';
@@ -220,7 +220,7 @@ if ($Success)
 			default { continue }
 		}
 		$child.AppendChild($ChannelElement)	| Out-Null;
-		#$child.AppendChild($UnitElement)	| out-null;
+		$child.AppendChild($UnitElement)	| out-null;
 		$child.AppendChild($FloatElement)	| out-null;
 		$ValueElement.InnerText = $Value
 		$child.AppendChild($ValueElement)	| out-null;
