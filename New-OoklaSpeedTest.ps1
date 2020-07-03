@@ -152,7 +152,7 @@ if (!([string]::IsNullorWhiteSpace($ServerId)))
 }
 
 $params += '--format=json --accept-license 2>&1'	# Append the handler that will capture errors
-logme ('Params = "{0})"' -f $params)
+logme ('Params   = "{0})"' -f $params)
 
 $Success = $false
 $Attempt = 0
@@ -163,7 +163,7 @@ $Attempt = 0
 	try
 	{
 		$response = Invoke-Expression "& '$SpeedTestExe' $params" 	# "$Response" will contain <what?>
-		logme $response
+		logme "Response = $response"
 		$result = $response | convertfrom-json
 		if ($result.type -eq "result")
 		{
@@ -210,7 +210,7 @@ if ($Success)
 			'Download Speed'
 			{
 				$channelelement.innertext = $Title;
-				$Value = [math]::round(($result.download).bandwidth / 125000, precision);
+				$Value = [math]::round(($result.download).bandwidth / 125000, $precision);
 				$UnitElement.InnerText = 'Mb/s';
 				$FloatElement.InnerText = '1';
 				$ChartElement.InnerText = '1';
