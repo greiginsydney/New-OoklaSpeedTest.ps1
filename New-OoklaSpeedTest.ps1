@@ -70,7 +70,7 @@ param(
 	[parameter(ValueFromPipeline, ValueFromPipelineByPropertyName = $true)]
 	[string]$ServerId,
 	[alias('File')][string]$FileName,
-	[ValidateRange(0,4)]
+	[ValidateRange(0,3)]
 	[int]$Precision=1,
 	[int]$Retries=2
 )
@@ -210,7 +210,7 @@ if ($Success)
 			'Download Speed'
 			{
 				$channelelement.innertext = $Title;
-				$Value = ('{0:n1}' -f ($result.download).bandwidth / 125000);
+				$Value = [math]::round(($result.download).bandwidth / 125000, precision);
 				$UnitElement.InnerText = 'Mb/s';
 				$FloatElement.InnerText = '1';
 				$ChartElement.InnerText = '1';
@@ -219,7 +219,7 @@ if ($Success)
 			'Upload Speed'
 			{
 				$channelelement.innertext = $Title;
-				$Value = ('{0:n1}' -f ($result.upload).bandwidth / 125000);
+				$Value = [math]::round(($result.upload).bandwidth / 125000, $precision);
 				$UnitElement.InnerText = 'Mb/s';
 				$FloatElement.InnerText = '1';
 				$ChartElement.InnerText = '1';
@@ -228,7 +228,7 @@ if ($Success)
 			'Latency'
 			{
 				$channelelement.innertext = $Title;
-				$Value = ('{0:n1}' -f ($result.ping).latency);
+				$Value = [math]::round(($result.ping).latency, $precision);
 				$UnitElement.InnerText = 'ms';
 				$FloatElement.InnerText = '1';
 				$ChartElement.InnerText = '1';
@@ -237,7 +237,7 @@ if ($Success)
 			'Jitter'
 			{
 				$channelelement.innertext = $Title;
-				$Value = ('{0:n1}' -f ($result.ping).jitter);
+				$Value = [math]::round(($result.ping).jitter, $precision);
 				$UnitElement.InnerText = 'ms';
 				$FloatElement.InnerText = '1';
 				$ChartElement.InnerText = '1';
@@ -246,7 +246,7 @@ if ($Success)
 			'Packet Loss'
 			{
 				$channelelement.innertext = $Title;
-				$Value = ('{0:n1}' -f $result.packetLoss);
+				$Value = [math]::round($result.packetLoss, $precision);
 				$UnitElement.InnerText = '%';
 				$FloatElement.InnerText = '0';
 				$ChartElement.InnerText = '1';
