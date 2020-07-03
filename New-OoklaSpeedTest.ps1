@@ -9,7 +9,7 @@
 
 .NOTES
 	Version				: 0.0
-	Date				: 2nd July 2020
+	Date				: 3rd July 2020
 	Author				: Greig Sheridan
 	See the credits at the bottom of the script
 
@@ -70,6 +70,8 @@ param(
 	[parameter(ValueFromPipeline, ValueFromPipelineByPropertyName = $true)]
 	[string]$ServerId,
 	[alias('File')][string]$FileName,
+	[ValidateRange(0,4)]
+	[int]$Precision=1,
 	[int]$Retries=2
 )
 
@@ -157,28 +159,32 @@ $Attempt = 0
 :nextAttempt while ($retries - $attempt -ge 0)
 {
 	$attempt ++
-	#write-verbose "Attempt #$($attempt)"
-	
+	write-verbose "Attempt #$($attempt)"
 	try
 	{
 		$response = Invoke-Expression "& '$SpeedTestExe' $params" 	# "$Response" will contain <what?>
-		logme "Success:$response" 
-		$success = $true
-		break
+		logme $response
+		$result = $response | convertfrom-json
+		if ($result.type -eq "result")
+		{
+			$success = $true
+			break
+		}
 	}
 	catch 
 	{
-		$response = "Error caught by handler: $_"
-		logme $response
+		$result = "Error caught by handler: $_"
+		logme $result
 	}
+	start-sleep -seconds 5
+	logme "Retrying" 
 }
-
-$result = $response | convertfrom-json 
 
 [xml]$Doc = New-Object System.Xml.XmlDocument
 $dec = $Doc.CreateXmlDeclaration('1.0','UTF-8',$null)
 $doc.AppendChild($dec) | Out-Null
 $root = $doc.CreateNode('element','prtg',$null)
+	
 if ($Success)
 {
 	logme ('ISP          : {0}' -f ($Result.isp))
