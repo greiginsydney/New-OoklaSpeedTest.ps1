@@ -8,8 +8,8 @@
 	Add a Filename and the same output will be saved to the named file.
 
 .NOTES
-	Version				: 0.0
-	Date				: 3rd July 2020
+	Version				: 1.0
+	Date				: 11th July 2020
 	Author				: Greig Sheridan
 	See the credits at the bottom of the script
 
@@ -21,19 +21,20 @@
 	KNOWN ISSUES:
 
 	Revision History 	:
-				v0.0 1st July 2020
-					Commenced
+				v1.0 11th July 2020
+					Initial release
 
 .LINK
-  https://www.speedtest.net/apps/cli
+	https://www.speedtest.net/apps/cli
 	https://greiginsydney.com/New-OoklaSpeedTest.ps1 - also https://github.com/greiginsydney/New-OoklaSpeedTest.ps1
 
 .EXAMPLE
-	.\New-OoklaSpeedTest.ps1
+	.\New-OoklaSpeedTest.ps1 -precision 3
 
 	Description
 	-----------
 	This executes a standard speed test against the default server for your location. Outputs to screen as XML (formatted for PRTG).
+	The test results will be shown rounded to 3 decimal places.
 
 .EXAMPLE
 	.\New-OoklaSpeedTest.ps1 -ServerId nnnn
@@ -41,14 +42,32 @@
 	Description
 	-----------
 	Queries the Ookla server Id 'nnnn' and displays the output to screen and pipeline in PRTG XML format.
+	('speedtest.exe -L' lists your nearest servers.)
 
 .EXAMPLE
-	.\New-OoklaSpeedTest.ps1 -ServerId nnnn -FileName OoklaSpeedTest.csv
+	.\New-OoklaSpeedTest.ps1 -ServerId nnnn -Retries 2
 
 	Description
 	-----------
-	Queries the Ookla server Id 'nnnn' and displays the output on screen in csv format. The same output is written to the file at OoklaSpeedTest.csv.
+	Queries the Ookla server Id 'nnnn' and displays the output to screen and pipeline in PRTG XML format.
+	If the first test fails it will initiate up to 2 more attempts before outputting a failure message.
 
+.EXAMPLE
+	.\New-OoklaSpeedTest.ps1 -ServerId nnnn -FileName OoklaSpeedTest.xml
+
+	Description
+	-----------
+	Queries the Ookla server Id 'nnnn' and displays the output on screen in PRTG XML format. The same output is written to the file at OoklaSpeedTest.xml.
+	If that file apready exists it will be overwritten without prompting.
+
+.EXAMPLE
+	.\New-OoklaSpeedTest.ps1 -FileName OoklaSpeedTest.xml -Debug
+
+	Description
+	-----------
+	Queries the default Ookla server for your location, displaying the output on screen in PRTG XML format & saving the same output to the file at OoklaSpeedTest.xml.
+	If that file apready exists it will be overwritten without prompting.
+	A debug "New-OoklaSpeedTest-yyyyMMM.log" will be saved in the same location as the script.
 
 
 .PARAMETER ServerID
@@ -57,8 +76,11 @@
 .PARAMETER FileName
 	File name (and path if you wish) of a file to which the script will write the data. Any existing file of the same name will be over-written without prompting.
 
+.PARAMETER Precision
+	Integer. How many digits will be displayed after the decimal point. The default is 1, minimum is zero and maximum is 8.
+
 .PARAMETER Retries
-	Integer. How many attempts will be made to get a good Speed Test. The default is 2.
+	Integer. How many attempts will be made to get a good Speed Test. The default is 2, minimum is zero and maximum is 4.
 
 .PARAMETER Debug
 	Switch. If present, the script will drop a detailed debug log file into its own folder. One per month.
@@ -70,8 +92,9 @@ param(
 	[parameter(ValueFromPipeline, ValueFromPipelineByPropertyName = $true)]
 	[string]$ServerId,
 	[alias('File')][string]$FileName,
-	[ValidateRange(0,3)]
+	[ValidateRange(0,8)]
 	[int]$Precision=1,
+	[ValidateRange(0,4)]
 	[int]$Retries=2
 )
 
@@ -148,10 +171,10 @@ else
 $params = ''
 if (!([string]::IsNullorWhiteSpace($ServerId)))
 {
-	$params += '--server-id=$ServerId '
+	$params += "--server-id=$($ServerId) "
 }
 
-$params += '--format=json --accept-license 2>&1'	# Append the handler that will capture errors
+$params += "--format=json --precision=$($precision) --accept-license 2>&1"	# Append the handler that will capture errors
 logme ('Params   = "{0})"' -f $params)
 
 $Success = $false
