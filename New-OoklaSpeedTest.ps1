@@ -14,7 +14,7 @@
 	See the credits at the bottom of the script
 
 	Based on :  https://github.com/greiginsydney/Get-WeatherLinkData.ps1
-	Blog post:  https://greiginsydney.com/Get-WeatherLinkData.ps1
+	Blog post:  https://greiginsydney.com/New-OoklaSpeedTest.ps1
 
 	WISH-LIST / TODO:
 
