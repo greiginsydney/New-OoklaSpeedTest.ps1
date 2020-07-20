@@ -8,8 +8,8 @@
 	Add a Filename and the same output will be saved to the named file.
 
 .NOTES
-	Version				: 1.0
-	Date				: 11th July 2020
+	Version				: 1.1
+	Date				: 20th July 2020
 	Author				: Greig Sheridan
 	See the credits at the bottom of the script
 
@@ -23,7 +23,9 @@
 	Revision History 	:
 				v1.0 11th July 2020
 					Initial release
-
+				v1.1 20th July 2020
+					Added the -AcceptGdpr switch
+					
 .LINK
 	https://www.speedtest.net/apps/cli
 	https://greiginsydney.com/New-OoklaSpeedTest.ps1 - also https://github.com/greiginsydney/New-OoklaSpeedTest.ps1
@@ -59,6 +61,15 @@
 	-----------
 	Queries the Ookla server Id 'nnnn' and displays the output on screen in PRTG XML format. The same output is written to the file at OoklaSpeedTest.xml.
 	If that file apready exists it will be overwritten without prompting.
+	
+.EXAMPLE
+	.\New-OoklaSpeedTest.ps1 -FileName OoklaSpeedTest.xml -AcceptGdpr
+
+	Description
+	-----------
+	Queries the default Ookla server for your location, displaying the output on screen in PRTG XML format & saving the same output to the file at OoklaSpeedTest.xml.
+	If that file apready exists it will be overwritten without prompting.
+	In the relevant Euro-zone locations, the -AcceptGdpr switch is required or the speedtest will not proceed.
 
 .EXAMPLE
 	.\New-OoklaSpeedTest.ps1 -FileName OoklaSpeedTest.xml -Debug
@@ -82,6 +93,9 @@
 .PARAMETER Retries
 	Integer. How many attempts will be made to get a good Speed Test. The default is 2, minimum is zero and maximum is 4.
 
+.PARAMETER AcceptGdpr
+	Switch. If present, adds the "--accept-gdpr" switch to the Ookla query.
+
 .PARAMETER Debug
 	Switch. If present, the script will drop a detailed debug log file into its own folder. One per month.
 
@@ -95,7 +109,8 @@ param(
 	[ValidateRange(0,8)]
 	[int]$Precision=1,
 	[ValidateRange(0,4)]
-	[int]$Retries=2
+	[int]$Retries=2,
+	[switch]$AcceptGdpr
 )
 
 $Error.Clear()		#Clear PowerShell's error variable
@@ -169,9 +184,15 @@ else
 }
 
 $params = ''
+
 if (!([string]::IsNullorWhiteSpace($ServerId)))
 {
 	$params += "--server-id=$($ServerId) "
+}
+
+if ($AcceptGdpr)
+{
+	$params += "--accept-gdpr "
 }
 
 $params += "--format=json --precision=$($precision) --accept-license 2>&1"	# Append the handler that will capture errors
