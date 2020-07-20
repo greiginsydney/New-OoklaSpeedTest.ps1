@@ -1,6 +1,6 @@
 # New-OoklaSpeedTest.ps1
 
-New-OoklaSpeedTest.ps1 is a Powershell script that uses [speedtest.net’s API](https://www.speedtest.net/insights/blog/introducing-speedtest-cli/) to run an Internet speed test and then format the result for Paessler’s [PRTG Network Monitor](https://www.paessler.com/prtg) to graph your Internet connection's performance. 
+New-OoklaSpeedTest.ps1 is a Powershell script that uses [speedtest.net’s API](https://www.speedtest.net/apps/cli) to run an Internet speed test and then format the result for Paessler’s [PRTG Network Monitor](https://www.paessler.com/prtg) to graph your Internet connection's performance. 
 
 ![PRTG-Ookla-12](https://user-images.githubusercontent.com/44954153/87398915-f075c500-c5f9-11ea-802f-6bc7e385cdb2.png)
 
