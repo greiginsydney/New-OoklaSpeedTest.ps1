@@ -29,6 +29,10 @@
 .LINK
 	https://www.speedtest.net/apps/cli
 	https://greiginsydney.com/New-OoklaSpeedTest.ps1 - also https://github.com/greiginsydney/New-OoklaSpeedTest.ps1
+	
+	https://www.speedtest.net/about/eula
+        https://www.speedtest.net/about/terms
+        https://www.speedtest.net/about/privacy
 
 .EXAMPLE
 	.\New-OoklaSpeedTest.ps1 -precision 3
@@ -94,7 +98,7 @@
 	Integer. How many attempts will be made to get a good Speed Test. The default is 2, minimum is zero and maximum is 4.
 
 .PARAMETER AcceptGdpr
-	Switch. If present, adds the "--accept-gdpr" switch to the Ookla query.
+	Switch. If present, adds the "--accept-gdpr" switch to the Ookla query. This is required in Euro-zone countries only. (See https://www.speedtest.net/about/privacy)
 
 .PARAMETER Debug
 	Switch. If present, the script will drop a detailed debug log file into its own folder. One per month.
