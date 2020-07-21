@@ -14,6 +14,7 @@ Parameter | Description
 -Precision |	How many digits will be displayed after the decimal point. The default is 1, minimum is zero and maximum is 8.
 -Retries	| How many attempts will be made to get a good Speed Test. The default is 2, minimum is zero and maximum is 4.
 -Debug	| If present, the script will drop a detailed debug log file into its own folder. One per month.
+-AcceptGdpr	| Adds the "accept-gdpr" switch to the Ookla query. This is required in Euro-zone countries only.
 
 You'll find more information on my blog, including detailed "how-to" steps to get your data into PRTG: https://greiginsydney.com/new-ooklaspeedtest-ps1/
 
